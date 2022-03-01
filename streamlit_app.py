@@ -1,38 +1,23 @@
-from collections import namedtuple
-import altair as alt
-import math
-import pandas as pd
-import streamlit as st
+def main():
+    st.title("Streamlit Face-GAN Demo")
 
-"""
-# Welcome to Streamlit!
+    # Step 1. Download models and data files.
+    for filename in EXTERNAL_DEPENDENCIES.keys():
+        download_file(filename)
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:
+    # Step 2. Read in models from the data files.
+    tl_gan_model, feature_names = load_tl_gan_model()
+    session, pg_gan_model = load_pg_gan_model()
 
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+    # Step 3. Draw the sidebar UI.
+    ...
+    features = ...  # Internally, this uses st.sidebar.slider(), etc.
 
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
+    # Step 4. Synthesize the image.
+    with session.as_default():
+        image_out = generate_image(session, pg_gan_model, tl_gan_model,
+                features, feature_names)
 
-
-with st.echo(code_location='below'):
-    total_points = st.slider("Number of points in spiral", 1, 5000, 2000)
-    num_turns = st.slider("Number of turns in spiral", 1, 100, 9)
-
-    Point = namedtuple('Point', 'x y')
-    data = []
-
-    points_per_turn = total_points / num_turns
-
-    for curr_point_num in range(total_points):
-        curr_turn, i = divmod(curr_point_num, points_per_turn)
-        angle = (curr_turn + 1) * 2 * math.pi * i / points_per_turn
-        radius = curr_point_num / total_points
-        x = radius * math.cos(angle)
-        y = radius * math.sin(angle)
-        data.append(Point(x, y))
-
-    st.altair_chart(alt.Chart(pd.DataFrame(data), height=500, width=500)
-        .mark_circle(color='#0068c9', opacity=0.5)
-        .encode(x='x:Q', y='y:Q'))
+    # Step 5. Draw the synthesized image.
+    st.image(image_out, use_column_width=True)
+    
